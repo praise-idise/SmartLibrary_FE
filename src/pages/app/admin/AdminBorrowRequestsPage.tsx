@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { isApiError } from "@/api/types";
+import { getApiErrorMessage } from "@/api/types";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Label, Textarea, toast } from "@/components/ui";
 import { approveBorrowRequest, fetchPendingBorrowRequests, rejectBorrowRequest } from "@/services/loans.service";
 import { getStatusBadgeClassName } from "@/lib/status-badge";
@@ -25,12 +25,18 @@ export function AdminBorrowRequestsPage() {
       toast.success("Borrow request approved.");
     },
     onError: (error) => {
-      toast.error(isApiError(error) ? error.message : "Unable to approve request.");
+      toast.error(getApiErrorMessage(error, "Unable to approve request."));
     },
   });
 
   const rejectMutation = useMutation({
-    mutationFn: (borrowRequestId: string) => rejectBorrowRequest(borrowRequestId, reason || undefined),
+    mutationFn: (borrowRequestId: string) => {
+      if (!reason.trim()) {
+        toast.error("A reason is required to reject a request.");
+        throw new Error("Reason required");
+      }
+      return rejectBorrowRequest(borrowRequestId, reason);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-pending-borrow-requests"] });
       queryClient.invalidateQueries({ queryKey: ["my-borrow-requests"] });
@@ -38,7 +44,8 @@ export function AdminBorrowRequestsPage() {
       toast.success("Borrow request rejected.");
     },
     onError: (error) => {
-      toast.error(isApiError(error) ? error.message : "Unable to reject request.");
+      if (error instanceof Error && error.message === "Reason required") return;
+      toast.error(getApiErrorMessage(error, "Unable to reject request."));
     },
   });
 
@@ -60,12 +67,12 @@ export function AdminBorrowRequestsPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="space-y-1">
-            <Label htmlFor="borrow-reason">Decision Reason (optional)</Label>
+            <Label htmlFor="borrow-reason">Decision Reason (required for rejection)</Label>
             <Textarea
               id="borrow-reason"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="Optional reason for this decision"
+              placeholder="Reason for this decision"
             />
           </div>
 

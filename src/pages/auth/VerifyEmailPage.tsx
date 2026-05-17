@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearch } from '@tanstack/react-router'
 import { AlertCircle, CheckCircle, Loader } from 'lucide-react'
 import { formatCooldown, useResendVerificationCooldown } from '@/auth/use-resend-verification-cooldown'
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, toast } from '@/components/ui'
-import { isApiError } from '@/api/types'
+import { getApiErrorMessage, isApiError } from '@/api/types'
 import { BrandLogo } from '@/components/app/BrandLogo'
 import { useAuth } from '@/hooks/use-auth'
 import { verifyEmail } from '@/services/auth.service'
@@ -72,7 +72,7 @@ export function VerifyEmailPage() {
             setStatus('ready-to-resend')
             toast.success('A new verification link has been sent.')
         } catch (error) {
-            setErrorMessage(isApiError(error) ? error.message : 'Failed to resend verification email.')
+            setErrorMessage(getApiErrorMessage(error, 'Failed to resend verification email.'))
             setStatus('ready-to-resend')
         }
     }

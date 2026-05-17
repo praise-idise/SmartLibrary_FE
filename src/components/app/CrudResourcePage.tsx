@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { useForm, type DefaultValues, type FieldValues, type Path, type Resolver } from 'react-hook-form'
-import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Textarea, toast } from '@/components/ui'
+import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ConfirmDialog, Input, Label, Textarea, toast } from '@/components/ui'
 import { isApiError, type Pagination } from '@/api/types'
 import { cn } from '@/lib/cn'
 
@@ -166,6 +166,8 @@ export function CrudResourcePage<TItem, TForm extends FieldValues>({
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
     const [mode, setMode] = useState<'create' | 'edit' | null>(null)
     const [selectedItem, setSelectedItem] = useState<TItem | null>(null)
+    const [deleteTarget, setDeleteTarget] = useState<TItem | null>(null)
+    const [deleteLabel, setDeleteLabel] = useState("")
     const trimmedSearchInput = searchInput.trim()
     const activeSearchTerm = useMemo(
         () => (debouncedSearchTerm.length >= minSearchCharacters ? debouncedSearchTerm : ''),
@@ -278,11 +280,11 @@ export function CrudResourcePage<TItem, TForm extends FieldValues>({
         }
     }
 
-    async function handleDelete(item: TItem) {
-        const label = getDeleteLabel?.(item) ?? entityLabel
-        const confirmed = window.confirm(`Delete ${label}?`)
-        if (!confirmed) return
-        await deleteMutation.mutateAsync(item)
+    async function confirmDelete() {
+        if (!deleteTarget) return
+        await deleteMutation.mutateAsync(deleteTarget)
+        setDeleteTarget(null)
+        setDeleteLabel("")
     }
 
     const pagination = listQuery.data?.pagination
@@ -422,7 +424,7 @@ export function CrudResourcePage<TItem, TForm extends FieldValues>({
                                                     <Button size="sm" variant="outline" className="shrink-0" onClick={() => openEdit(item)}>
                                                         Edit
                                                     </Button>
-                                                    <Button size="sm" variant="destructive" className="shrink-0" onClick={() => handleDelete(item)}>
+                                                    <Button size="sm" variant="destructive" className="shrink-0" onClick={() => { setDeleteTarget(item); setDeleteLabel(getDeleteLabel?.(item) ?? entityLabel); }}>
                                                         Delete
                                                     </Button>
                                                 </div>
@@ -453,6 +455,14 @@ export function CrudResourcePage<TItem, TForm extends FieldValues>({
                     </div>
                 </CardContent>
             </Card>
+            <ConfirmDialog
+                open={!!deleteTarget}
+                title={`Delete ${entityLabel}`}
+                message={`Delete ${deleteLabel}? This action cannot be undone.`}
+                confirmLabel="Delete"
+                onConfirm={confirmDelete}
+                onCancel={() => { setDeleteTarget(null); setDeleteLabel(""); }}
+            />
         </main>
     )
 }

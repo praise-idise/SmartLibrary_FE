@@ -1,9 +1,11 @@
+import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "@tanstack/react-router";
-import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
+import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, toast } from "@/components/ui";
 import { fetchBookById } from "@/services/books.service";
-import { borrowBook } from "@/services/loans.service";
-import { BOOK_AVAILABILITY_STATUS } from "@/lib/domain-values";
+import { borrowBook, fetchMyBorrowRequests } from "@/services/loans.service";
+import { BOOK_AVAILABILITY_STATUS, BORROW_REQUEST_STATUS } from "@/lib/domain-values";
+import { getApiErrorMessage } from "@/api/types";
 import { getStatusBadgeClassName } from "@/lib/status-badge";
 import { formatIsbn } from "@/lib/isbn";
 
@@ -16,12 +18,27 @@ export function BookDetailPage() {
     queryFn: () => fetchBookById(bookId),
   });
 
+  const borrowRequestsQuery = useQuery({
+    queryKey: ["my-borrow-requests"],
+    queryFn: () => fetchMyBorrowRequests(1, 50),
+  });
+
+  const hasPendingRequest = useMemo(
+    () => (borrowRequestsQuery.data?.data ?? []).some((r) => r.bookId === bookId && r.status === BORROW_REQUEST_STATUS.PENDING),
+    [borrowRequestsQuery.data, bookId],
+  );
+
   const borrowMutation = useMutation({
     mutationFn: () => borrowBook(bookId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["books"] });
       queryClient.invalidateQueries({ queryKey: ["book", bookId] });
+      queryClient.invalidateQueries({ queryKey: ["my-borrow-requests"] });
       queryClient.invalidateQueries({ queryKey: ["my-loans"] });
+      toast.success("Borrow request submitted for librarian approval.");
+    },
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, "Unable to submit borrow request."));
     },
   });
 
@@ -93,13 +110,17 @@ export function BookDetailPage() {
                 </div>
 
                 <div className="pt-2">
-                  <Button
-                    className="w-full sm:w-auto"
-                    disabled={book.availabilityStatus !== BOOK_AVAILABILITY_STATUS.AVAILABLE || borrowMutation.isPending}
-                    onClick={() => borrowMutation.mutate()}
-                  >
-                    Submit Borrow Request
-                  </Button>
+                  {hasPendingRequest ? (
+                    <Badge variant="outline" className="py-2.5">Borrow Request Pending</Badge>
+                  ) : (
+                    <Button
+                      className="w-full sm:w-auto"
+                      disabled={book.availabilityStatus !== BOOK_AVAILABILITY_STATUS.AVAILABLE || borrowMutation.isPending}
+                      onClick={() => borrowMutation.mutate()}
+                    >
+                      Submit Borrow Request
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { isApiError } from "@/api/types";
-import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, toast } from "@/components/ui";
+import { getApiErrorMessage } from "@/api/types";
+import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ConfirmDialog, Input, Label, toast } from "@/components/ui";
 import { activateUser, deactivateUser, deleteUser, fetchUserBorrowHistory, fetchUsers } from "@/services/admin.service";
 import { getStatusBadgeClassName } from "@/lib/status-badge";
 import { AdminSubNav } from "@/pages/app/admin/AdminSubNav";
@@ -11,6 +11,8 @@ export function AdminUsersPage() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
+  const [deactivateTarget, setDeactivateTarget] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const usersQuery = useQuery({
     queryKey: ["admin-users", pageNumber],
@@ -30,7 +32,7 @@ export function AdminUsersPage() {
       toast.success("User deactivated.");
     },
     onError: (error) => {
-      toast.error(isApiError(error) ? error.message : "Unable to deactivate user.");
+      toast.error(getApiErrorMessage(error, "Unable to deactivate user."));
     },
   });
 
@@ -41,7 +43,7 @@ export function AdminUsersPage() {
       toast.success("User activated.");
     },
     onError: (error) => {
-      toast.error(isApiError(error) ? error.message : "Unable to activate user.");
+      toast.error(getApiErrorMessage(error, "Unable to activate user."));
     },
   });
 
@@ -53,7 +55,7 @@ export function AdminUsersPage() {
       toast.success("User deleted.");
     },
     onError: (error) => {
-      toast.error(isApiError(error) ? error.message : "Unable to delete user.");
+      toast.error(getApiErrorMessage(error, "Unable to delete user."));
     },
   });
 
@@ -117,11 +119,11 @@ export function AdminUsersPage() {
                   <div className="flex flex-wrap gap-2">
                     <Button size="sm" variant="outline" onClick={() => setSelectedUserId(user.userId)}>View History</Button>
                     {user.isActive ? (
-                      <Button size="sm" variant="destructive" onClick={() => deactivateMutation.mutate(user.userId)} disabled={deactivateMutation.isPending}>Deactivate</Button>
+                      <Button size="sm" variant="destructive" onClick={() => setDeactivateTarget(user.userId)} disabled={deactivateMutation.isPending}>Deactivate</Button>
                     ) : (
                       <Button size="sm" onClick={() => activateMutation.mutate(user.userId)} disabled={activateMutation.isPending}>Activate</Button>
                     )}
-                    <Button size="sm" variant="destructive" onClick={() => deleteMutation.mutate(user.userId)} disabled={deleteMutation.isPending}>Delete</Button>
+                    <Button size="sm" variant="destructive" onClick={() => setDeleteTarget(user.userId)} disabled={deleteMutation.isPending}>Delete</Button>
                   </div>
                 </div>
 
@@ -170,6 +172,23 @@ export function AdminUsersPage() {
           )}
         </CardContent>
       </Card>
+      <ConfirmDialog
+        open={!!deactivateTarget}
+        title="Deactivate User"
+        message="Deactivating this user will block them from logging in. They will not be able to access the system until reactivated."
+        confirmLabel="Deactivate"
+        variant="destructive"
+        onConfirm={() => { deactivateMutation.mutate(deactivateTarget!); setDeactivateTarget(null); }}
+        onCancel={() => setDeactivateTarget(null)}
+      />
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete User"
+        message="This will permanently remove the user account. This action cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={() => { deleteMutation.mutate(deleteTarget!); setDeleteTarget(null); }}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </main>
   );
 }

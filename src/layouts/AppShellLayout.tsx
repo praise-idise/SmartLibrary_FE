@@ -33,7 +33,7 @@ const navItems: NavItem[] = [
   { label: "Books", to: "/app/books", icon: BookOpenText },
   { label: "My Loans", to: "/app/loans", icon: Library },
   { label: "Settings", to: "/app/settings", icon: Settings },
-  { label: "Admin Panel", to: "/app/admin/books", icon: Shield, roles: [APP_ROLES.ADMIN] },
+  { label: "Admin Panel", to: "/app/admin", icon: Shield, roles: [APP_ROLES.ADMIN] },
 ];
 
 const themeOptions: {

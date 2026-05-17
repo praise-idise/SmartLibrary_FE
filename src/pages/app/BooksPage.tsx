@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { BOOK_AVAILABILITY_STATUS, BOOK_CATEGORY_OPTIONS, type BookAvailabilityStatus } from "@/lib/domain-values";
-import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label } from "@/components/ui";
-import { borrowBook, reserveBook } from "@/services/loans.service";
+import { BOOK_AVAILABILITY_STATUS, BOOK_CATEGORY_OPTIONS, BORROW_REQUEST_STATUS, RESERVATION_STATUS, type BookAvailabilityStatus } from "@/lib/domain-values";
+import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, toast } from "@/components/ui";
+import { borrowBook, fetchMyBorrowRequests, fetchMyReservations, reserveBook } from "@/services/loans.service";
 import { fetchBooks } from "@/services/books.service";
+import { getApiErrorMessage } from "@/api/types";
 import { getStatusBadgeClassName } from "@/lib/status-badge";
 import { formatIsbn } from "@/lib/isbn";
 
@@ -37,12 +38,36 @@ export function BooksPage() {
     queryFn: () => fetchBooks(filters),
   });
 
+  const borrowRequestsQuery = useQuery({
+    queryKey: ["my-borrow-requests"],
+    queryFn: () => fetchMyBorrowRequests(1, 50),
+  });
+
+  const reservationsQuery = useQuery({
+    queryKey: ["my-reservations"],
+    queryFn: () => fetchMyReservations(1, 50),
+  });
+
+  const pendingBookIds = useMemo(
+    () => new Set((borrowRequestsQuery.data?.data ?? []).filter((r) => r.status === BORROW_REQUEST_STATUS.PENDING).map((r) => r.bookId)),
+    [borrowRequestsQuery.data],
+  );
+
+  const reservedBookIds = useMemo(
+    () => new Set((reservationsQuery.data?.data ?? []).filter((r) => r.status === RESERVATION_STATUS.PENDING).map((r) => r.bookId)),
+    [reservationsQuery.data],
+  );
+
   const borrowMutation = useMutation({
     mutationFn: (bookId: string) => borrowBook(bookId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["books"] });
       queryClient.invalidateQueries({ queryKey: ["my-borrow-requests"] });
       queryClient.invalidateQueries({ queryKey: ["my-loans"] });
+      toast.success("Borrow request submitted for librarian approval.");
+    },
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, "Unable to submit borrow request."));
     },
   });
 
@@ -51,6 +76,10 @@ export function BooksPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["books"] });
       queryClient.invalidateQueries({ queryKey: ["my-reservations"] });
+      toast.success("Reservation queued successfully.");
+    },
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, "Unable to submit reservation."));
     },
   });
 
@@ -161,18 +190,18 @@ export function BooksPage() {
                   </Link>
                   <Button
                     className="flex-1 whitespace-nowrap"
-                    disabled={book.availabilityStatus !== BOOK_AVAILABILITY_STATUS.AVAILABLE || borrowMutation.isPending}
+                    disabled={pendingBookIds.has(book.bookId) || book.availabilityStatus !== BOOK_AVAILABILITY_STATUS.AVAILABLE || borrowMutation.isPending}
                     onClick={() => borrowMutation.mutate(book.bookId)}
                   >
-                    Request Borrow
+                    {pendingBookIds.has(book.bookId) ? "Request Pending" : "Request Borrow"}
                   </Button>
                   <Button
                     variant="outline"
                     className="flex-1 whitespace-nowrap"
-                    disabled={book.availabilityStatus === BOOK_AVAILABILITY_STATUS.AVAILABLE || reserveMutation.isPending}
+                    disabled={reservedBookIds.has(book.bookId) || book.availabilityStatus === BOOK_AVAILABILITY_STATUS.AVAILABLE || reserveMutation.isPending}
                     onClick={() => reserveMutation.mutate(book.bookId)}
                   >
-                    Reserve
+                    {reservedBookIds.has(book.bookId) ? "Reserved" : "Reserve"}
                   </Button>
                 </div>
               </CardContent>

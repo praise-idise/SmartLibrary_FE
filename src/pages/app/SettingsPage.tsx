@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { isApiError } from "@/api/types";
+import { getApiErrorMessage } from "@/api/types";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, toast } from "@/components/ui";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -38,7 +38,7 @@ export function SettingsPage() {
       reset();
       toast.success("Password changed successfully.");
     } catch (error) {
-      toast.error(isApiError(error) ? error.message : "Unable to change password.");
+      toast.error(getApiErrorMessage(error, "Unable to change password."));
     }
   }
 

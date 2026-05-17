@@ -7,4 +7,5 @@ export * from "./separator";
 export * from "./skeleton";
 export * from "./spinner";
 export * from "./textarea";
+export * from "./confirm-dialog";
 export * from "./toast";

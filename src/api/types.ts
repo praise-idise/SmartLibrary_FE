@@ -78,6 +78,31 @@ export function isApiError(error: unknown): error is ApiError {
   );
 }
 
+export function getApiErrorMessage(error: unknown, fallback: string): string {
+  if (isApiError(error) && typeof error.message === "string" && error.message.trim().length > 0) {
+    return error.message;
+  }
+  if (error instanceof Error && error.message.trim().length > 0) {
+    return error.message;
+  }
+  if (typeof error === "object" && error !== null) {
+    const obj = error as Record<string, unknown>;
+    if (typeof obj.message === "string" && obj.message.trim().length > 0) {
+      return obj.message;
+    }
+    // FluentValidation ProblemDetails format
+    if (typeof obj.title === "string" && obj.title.trim().length > 0) {
+      const errors = obj.errors as Record<string, string[]> | undefined;
+      if (errors) {
+        const firstError = Object.values(errors).flat()[0];
+        if (firstError) return firstError;
+      }
+      return obj.title;
+    }
+  }
+  return fallback;
+}
+
 import type { BookAvailabilityStatus, BorrowRequestStatus, LoanStatus, ReservationStatus } from "@/lib/domain-values";
 
 export type { BookAvailabilityStatus, BorrowRequestStatus, LoanStatus, ReservationStatus };

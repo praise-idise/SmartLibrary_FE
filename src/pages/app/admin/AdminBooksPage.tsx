@@ -4,8 +4,8 @@ import { type SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ImagePlus } from "lucide-react";
-import { isApiError, type Book } from "@/api/types";
-import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Textarea, toast } from "@/components/ui";
+import { getApiErrorMessage, type Book } from "@/api/types";
+import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ConfirmDialog, Input, Label, Textarea, toast } from "@/components/ui";
 import { createBook, deleteBook, fetchBooks, updateBook, type UpsertBookInput } from "@/services/books.service";
 import { getStatusBadgeClassName } from "@/lib/status-badge";
 import { AdminSubNav } from "@/pages/app/admin/AdminSubNav";
@@ -17,7 +17,7 @@ const bookSchema = z.object({
   author: z.string().min(1, "Author is required."),
   category: z.string().min(1, "Category is required."),
   isbn: z.string().min(1, "ISBN is required.").refine(isValidIsbn, "Enter a valid ISBN-13 (13 digits, starting with 978 or 979)."),
-  publicationYear: z.coerce.number().int("Must be a whole number.").min(1000, "Enter a valid year."),
+  publicationYear: z.coerce.number().int("Must be a whole number.").min(1800, "Enter a valid year."),
   description: z.string().min(1, "Description is required."),
   totalCopies: z.coerce.number().int("Must be a whole number.").min(1, "Must be at least 1."),
 });
@@ -47,6 +47,7 @@ export function AdminBooksPage() {
   const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null);
   const [existingCoverUrl, setExistingCoverUrl] = useState<string | null>(null);
   const [isCoverDragActive, setIsCoverDragActive] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Book | null>(null);
 
   const {
     register,
@@ -80,7 +81,7 @@ export function AdminBooksPage() {
       toast.success("Book created successfully.");
     },
     onError: (error) => {
-      toast.error(isApiError(error) ? error.message : "Unable to create book.");
+      toast.error(getApiErrorMessage(error, "Unable to create book."));
     },
   });
 
@@ -93,7 +94,7 @@ export function AdminBooksPage() {
       toast.success("Book updated successfully.");
     },
     onError: (error) => {
-      toast.error(isApiError(error) ? error.message : "Unable to update book.");
+      toast.error(getApiErrorMessage(error, "Unable to update book."));
     },
   });
 
@@ -105,7 +106,7 @@ export function AdminBooksPage() {
       toast.success("Book deleted.");
     },
     onError: (error) => {
-      toast.error(isApiError(error) ? error.message : "Unable to delete book.");
+      toast.error(getApiErrorMessage(error, "Unable to delete book."));
     },
   });
 
@@ -201,9 +202,10 @@ export function AdminBooksPage() {
     }
   };
 
-  async function handleDelete(book: Book) {
-    if (!window.confirm(`Delete "${book.title}" from the catalog?`)) return;
-    await deleteMutation.mutateAsync(book.bookId);
+  async function confirmDelete() {
+    if (!deleteTarget) return;
+    await deleteMutation.mutateAsync(deleteTarget.bookId);
+    setDeleteTarget(null);
   }
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
@@ -356,7 +358,7 @@ export function AdminBooksPage() {
                         {book.availabilityStatus}
                       </Badge>
                       <Button variant="outline" size="sm" onClick={() => openEdit(book)}>Edit</Button>
-                      <Button variant="destructive" size="sm" onClick={() => handleDelete(book)} disabled={deleteMutation.isPending}>Delete</Button>
+                      <Button variant="destructive" size="sm" onClick={() => setDeleteTarget(book)} disabled={deleteMutation.isPending}>Delete</Button>
                     </div>
                   </div>
                 ))}
@@ -377,6 +379,14 @@ export function AdminBooksPage() {
           )}
         </CardContent>
       </Card>
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete Book"
+        message={`Delete "${deleteTarget?.title}" from the catalog? This action cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </main>
   );
 }

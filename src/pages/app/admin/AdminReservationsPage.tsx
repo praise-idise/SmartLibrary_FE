@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { isApiError } from "@/api/types";
+import { getApiErrorMessage } from "@/api/types";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Label, Textarea, toast } from "@/components/ui";
 import { fetchReservationQueue, fulfillReservation, rejectReservation } from "@/services/loans.service";
 import { getStatusBadgeClassName } from "@/lib/status-badge";
@@ -26,12 +26,18 @@ export function AdminReservationsPage() {
       toast.success("Reservation fulfilled.");
     },
     onError: (error) => {
-      toast.error(isApiError(error) ? error.message : "Unable to fulfill reservation.");
+      toast.error(getApiErrorMessage(error, "Unable to fulfill reservation."));
     },
   });
 
   const rejectMutation = useMutation({
-    mutationFn: (reservationId: string) => rejectReservation(reservationId, reason || undefined),
+    mutationFn: (reservationId: string) => {
+      if (!reason.trim()) {
+        toast.error("A reason is required to reject a reservation.");
+        throw new Error("Reason required");
+      }
+      return rejectReservation(reservationId, reason);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-reservation-queue"] });
       queryClient.invalidateQueries({ queryKey: ["my-reservations"] });
@@ -39,7 +45,8 @@ export function AdminReservationsPage() {
       toast.success("Reservation rejected.");
     },
     onError: (error) => {
-      toast.error(isApiError(error) ? error.message : "Unable to reject reservation.");
+      if (error instanceof Error && error.message === "Reason required") return;
+      toast.error(getApiErrorMessage(error, "Unable to reject reservation."));
     },
   });
 
@@ -61,12 +68,12 @@ export function AdminReservationsPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="space-y-1">
-            <Label htmlFor="reservation-reason">Decision Reason (optional)</Label>
+            <Label htmlFor="reservation-reason">Decision Reason (required for rejection)</Label>
             <Textarea
               id="reservation-reason"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="Optional reason for this decision"
+              placeholder="Reason for this decision"
             />
           </div>
 

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
+import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, toast } from "@/components/ui";
 import { fetchMyBorrowRequests, fetchMyLoanHistory, fetchMyLoans, fetchMyReservations, returnBook } from "@/services/loans.service";
+import { getApiErrorMessage } from "@/api/types";
 import { RESERVATION_STATUS } from "@/lib/domain-values";
 import { getStatusBadgeClassName } from "@/lib/status-badge";
 
@@ -47,6 +48,10 @@ export function LoansPage() {
       queryClient.invalidateQueries({ queryKey: ["my-loans"] });
       queryClient.invalidateQueries({ queryKey: ["my-loans-history"] });
       queryClient.invalidateQueries({ queryKey: ["books"] });
+      toast.success("Book returned successfully.");
+    },
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, "Unable to return book."));
     },
   });
 

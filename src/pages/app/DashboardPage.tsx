@@ -1,7 +1,8 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
+import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, toast } from "@/components/ui";
 import { useAuth } from "@/hooks/use-auth";
 import { exportDashboardReport, fetchDashboardAnalytics } from "@/services/dashboard.service";
+import { getApiErrorMessage } from "@/api/types";
 import { getStatusBadgeClassName } from "@/lib/status-badge";
 
 function triggerBrowserDownload(blob: Blob, fileName: string) {
@@ -27,6 +28,10 @@ export function DashboardPage() {
     mutationFn: exportDashboardReport,
     onSuccess: ({ blob, fileName }) => {
       triggerBrowserDownload(blob, fileName ?? "dashboard-report");
+      toast.success("Report downloaded.");
+    },
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, "Unable to export report."));
     },
   });
 

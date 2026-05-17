@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { formatCooldown, useResendVerificationCooldown } from '@/auth/use-resend-verification-cooldown'
 import { getAuthUser } from '@/auth/session'
-import { isApiError } from '@/api/types'
+import { getApiErrorMessage, isApiError } from '@/api/types'
 import { BrandLogo } from '@/components/app/BrandLogo'
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, toast } from '@/components/ui'
 import { useAuth } from '@/hooks/use-auth'
@@ -83,7 +83,7 @@ export function LoginPage() {
             toast.success('A new verification link has been sent to your email.')
         } catch (error) {
             setResendStatus('idle')
-            toast.error(isApiError(error) ? error.message : 'Unable to resend verification link.')
+            toast.error(getApiErrorMessage(error, 'Unable to resend verification link.'))
         }
     }
 

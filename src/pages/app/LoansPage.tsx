@@ -4,6 +4,7 @@ import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitl
 import { fetchMyBorrowRequests, fetchMyLoanHistory, fetchMyLoans, fetchMyReservations, returnBook } from "@/services/loans.service";
 import { getApiErrorMessage } from "@/api/types";
 import { RESERVATION_STATUS } from "@/lib/domain-values";
+import { formatCnyCurrency } from "@/lib/currency";
 import { getStatusBadgeClassName } from "@/lib/status-badge";
 
 function Pagination({ page, totalPages, onPageChange }: { page: number; totalPages: number; onPageChange: (p: number) => void }) {
@@ -93,7 +94,7 @@ export function LoansPage() {
                   <div>
                     <p className="font-medium">{loan.book?.title ?? "Book"}</p>
                     <p className="text-xs text-muted-foreground">
-                      Due: {new Date(loan.dueDate).toLocaleDateString()} • Fine: NGN {loan.fineAmount.toFixed(2)}
+                      Due: {new Date(loan.dueDate).toLocaleDateString()} • Fine: {formatCnyCurrency(loan.fineAmount)}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">

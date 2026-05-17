@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getApiErrorMessage } from "@/api/types";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ConfirmDialog, Input, Label, toast } from "@/components/ui";
 import { activateUser, deactivateUser, deleteUser, fetchUserBorrowHistory, fetchUsers } from "@/services/admin.service";
+import { formatCnyCurrency } from "@/lib/currency";
 import { getStatusBadgeClassName } from "@/lib/status-badge";
 import { AdminSubNav } from "@/pages/app/admin/AdminSubNav";
 
@@ -147,7 +148,7 @@ export function AdminUsersPage() {
                             </p>
                             <div className="mt-2 flex flex-wrap gap-2">
                               <Badge variant="outline" className={getStatusBadgeClassName(record.status)}>{record.status}</Badge>
-                              <Badge variant="outline" className={record.fineAmount > 0 ? getStatusBadgeClassName("OVERDUE") : ""}>Fine: NGN {record.fineAmount.toFixed(2)}</Badge>
+                              <Badge variant="outline" className={record.fineAmount > 0 ? getStatusBadgeClassName("OVERDUE") : ""}>Fine: {formatCnyCurrency(record.fineAmount)}</Badge>
                             </div>
                           </div>
                         ))}

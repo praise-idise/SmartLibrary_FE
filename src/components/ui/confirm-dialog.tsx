@@ -1,14 +1,14 @@
-import { Button } from "@/components/ui/button";
+import { Button, type ButtonProps } from "@/components/ui/button";
 
-interface ConfirmDialogProps {
+type ConfirmDialogProps = {
   open: boolean;
   title: string;
   message: string;
   confirmLabel?: string;
-  variant?: "destructive" | "default";
+  variant?: ButtonProps["variant"];
   onConfirm: () => void;
   onCancel: () => void;
-}
+};
 
 export function ConfirmDialog({
   open,

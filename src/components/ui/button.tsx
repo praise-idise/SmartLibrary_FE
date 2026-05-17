@@ -4,7 +4,7 @@ import { cn } from '@/lib/cn'
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive'
 type ButtonSize = 'sm' | 'md' | 'lg' | 'icon'
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: ButtonVariant
     size?: ButtonSize
     loading?: boolean

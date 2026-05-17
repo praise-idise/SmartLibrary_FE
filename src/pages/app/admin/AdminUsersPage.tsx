@@ -67,10 +67,10 @@ export function AdminUsersPage() {
 
   const filteredUsers = search
     ? allUsers.filter(
-        (u) =>
-          u.email.toLowerCase().includes(search.toLowerCase()) ||
-          u.fullName.toLowerCase().includes(search.toLowerCase()),
-      )
+      (u) =>
+        u.email.toLowerCase().includes(search.toLowerCase()) ||
+        u.fullName.toLowerCase().includes(search.toLowerCase()),
+    )
     : allUsers;
 
   return (

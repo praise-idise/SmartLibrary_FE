@@ -168,9 +168,9 @@ const bookDetailRoute = createRoute({
   component: BookDetailPage,
 });
 
-const loansRoute = createRoute({
+const borrowsRoute = createRoute({
   getParentRoute: () => appShellRoute,
-  path: "/loans",
+  path: "/borrows",
   component: LoansPage,
 });
 
@@ -240,7 +240,7 @@ const routeTree = rootRoute.addChildren([
     dashboardRoute,
     booksRoute,
     bookDetailRoute,
-    loansRoute,
+    borrowsRoute,
     settingsRoute,
     adminIndexRoute,
     adminBooksRoute,

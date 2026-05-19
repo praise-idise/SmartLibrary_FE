@@ -71,7 +71,7 @@ export function LoansPage() {
   return (
     <main className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">My Loans and History</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">My Borrows and History</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Track active borrows, due dates, overdue fines, and returned books.
         </p>
@@ -79,14 +79,14 @@ export function LoansPage() {
 
       <Card className="bg-surface/95">
         <CardHeader>
-          <CardTitle>Active Loans</CardTitle>
+          <CardTitle>Active Borrows</CardTitle>
           <CardDescription>Books currently borrowed by you.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {activeQuery.isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading active loans...</p>
+            <p className="text-sm text-muted-foreground">Loading active borrows...</p>
           ) : activeLoans.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No active loans found.</p>
+            <p className="text-sm text-muted-foreground">No active borrows found.</p>
           ) : (
             activeLoans.map((loan) => (
               <div key={loan.borrowRecordId} className="rounded-md border border-border p-3">
@@ -174,7 +174,7 @@ export function LoansPage() {
       <Card className="bg-surface/95">
         <CardHeader>
           <CardTitle>Borrow History</CardTitle>
-          <CardDescription>Returned books and completed loan records.</CardDescription>
+          <CardDescription>Returned books and completed borrow records.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {historyQuery.isLoading ? (

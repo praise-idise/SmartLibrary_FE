@@ -47,7 +47,7 @@ export function DashboardPage() {
         <p className="mt-2 text-sm text-muted-foreground">
           {isAdmin
             ? "Admin analytics for borrowing performance, fines, and user behavior."
-            : "Your personal borrowing trends and loan activity."}
+            : "Your personal borrowing trends and borrow activity."}
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => exportMutation.mutate("csv")} disabled={exportMutation.isPending}>
@@ -62,8 +62,8 @@ export function DashboardPage() {
       <section className="grid gap-4 md:grid-cols-3">
         <Card className="bg-surface/95">
           <CardHeader>
-            <CardTitle className="text-base">Active Loans</CardTitle>
-            <CardDescription>Open loans currently in circulation.</CardDescription>
+            <CardTitle className="text-base">Active Borrows</CardTitle>
+            <CardDescription>Open borrows currently in circulation.</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-semibold">{analytics?.activeLoans ?? 0}</p>
@@ -72,8 +72,8 @@ export function DashboardPage() {
 
         <Card className="bg-surface/95">
           <CardHeader>
-            <CardTitle className="text-base">Overdue Loans</CardTitle>
-            <CardDescription>Loans past due date or marked overdue.</CardDescription>
+            <CardTitle className="text-base">Overdue Borrows</CardTitle>
+            <CardDescription>Borrows past due date or marked overdue.</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-semibold">{analytics?.overdueLoans ?? 0}</p>

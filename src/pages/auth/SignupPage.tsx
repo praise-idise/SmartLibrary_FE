@@ -16,7 +16,7 @@ const signupSchema = z.object({
     phoneNumber: z
         .string()
         .trim()
-        .regex(/^\+[1-9]\d{7,14}$/, 'Use international format (example: +2348012345678).'),
+        .regex(/^\+[1-9]\d{7,14}$/, 'Use international format (example: +8613800138000).'),
     password: z.string()
         .min(8, 'Password must be at least 8 characters.')
         .regex(/[A-Z]/, 'Password must include an uppercase letter.')
@@ -143,7 +143,7 @@ export function SignupPage() {
                             <Input
                                 id="phoneNumber"
                                 type="tel"
-                                placeholder="+2348012345678"
+                                placeholder="+8613800138000"
                                 error={Boolean(errors.phoneNumber)}
                                 {...register('phoneNumber')}
                             />

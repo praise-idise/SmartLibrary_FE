@@ -31,7 +31,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { label: "Dashboard", to: "/app/dashboard", icon: LayoutDashboard },
   { label: "Books", to: "/app/books", icon: BookOpenText },
-  { label: "My Loans", to: "/app/loans", icon: Library },
+  { label: "My Borrows", to: "/app/borrows", icon: Library },
   { label: "Settings", to: "/app/settings", icon: Settings },
   { label: "Admin Panel", to: "/app/admin", icon: Shield, roles: [APP_ROLES.ADMIN] },
 ];

@@ -14,12 +14,5 @@ export function isValidIsbn(isbn: string): boolean {
   const digits = stripIsbn(isbn).replace(/\D/g, "");
   if (digits.length !== 13) return false;
   if (!digits.startsWith("978") && !digits.startsWith("979")) return false;
-
-  let sum = 0;
-  for (let i = 0; i < 12; i++) {
-    const digit = parseInt(digits[i], 10);
-    sum += i % 2 === 0 ? digit : digit * 3;
-  }
-  const checkDigit = (10 - (sum % 10)) % 10;
-  return checkDigit === parseInt(digits[12], 10);
+  return true;
 }

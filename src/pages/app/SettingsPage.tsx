@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Eye, EyeOff } from "lucide-react";
 import { getApiErrorMessage } from "@/api/types";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, toast } from "@/components/ui";
 import { useAuth } from "@/hooks/use-auth";
@@ -18,6 +20,9 @@ type PasswordFormValues = z.infer<typeof passwordSchema>;
 
 export function SettingsPage() {
   const { user, changePassword } = useAuth();
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     register,
@@ -83,17 +88,47 @@ export function SettingsPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="max-w-md space-y-4">
             <div className="space-y-1">
               <Label htmlFor="currentPassword" required>Current Password</Label>
-              <Input id="currentPassword" type="password" error={!!errors.currentPassword} {...register("currentPassword")} />
+              <div className="relative">
+                <Input id="currentPassword" type={showCurrentPassword ? "text" : "password"} error={!!errors.currentPassword} className="pr-10" {...register("currentPassword")} />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  aria-label={showCurrentPassword ? "Hide password" : "Show password"}
+                >
+                  {showCurrentPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
               {errors.currentPassword && <p className="text-xs text-destructive">{errors.currentPassword.message}</p>}
             </div>
             <div className="space-y-1">
               <Label htmlFor="newPassword" required>New Password</Label>
-              <Input id="newPassword" type="password" error={!!errors.newPassword} {...register("newPassword")} />
+              <div className="relative">
+                <Input id="newPassword" type={showNewPassword ? "text" : "password"} error={!!errors.newPassword} className="pr-10" {...register("newPassword")} />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  aria-label={showNewPassword ? "Hide password" : "Show password"}
+                >
+                  {showNewPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
               {errors.newPassword && <p className="text-xs text-destructive">{errors.newPassword.message}</p>}
             </div>
             <div className="space-y-1">
               <Label htmlFor="confirmPassword" required>Confirm New Password</Label>
-              <Input id="confirmPassword" type="password" error={!!errors.confirmPassword} {...register("confirmPassword")} />
+              <div className="relative">
+                <Input id="confirmPassword" type={showConfirmPassword ? "text" : "password"} error={!!errors.confirmPassword} className="pr-10" {...register("confirmPassword")} />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                >
+                  {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
               {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>}
             </div>
             <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Changing..." : "Change Password"}</Button>
